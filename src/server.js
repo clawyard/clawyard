@@ -11,6 +11,7 @@ const printfulService = require('./printful');
 const { validateOrder } = require('./validation');
 const { easService } = require('./eas');
 const { verifyPayment, getPaymentAddress } = require('./payment');
+const { verifyAgent } = require('./agent-verify');
 const Joi = require('joi');
 
 const app = express();
@@ -172,6 +173,34 @@ app.post('/api/order', orderLimiter, async (req, res) => {
     }
 
     const { stickers, shippingAddress, agentId, shippingMethod, shippingCost } = value;
+
+    // Verify ERC-8004 agent identity
+    if (!agentId) {
+      return res.status(403).json({
+        error: 'Agent verification required',
+        message: 'This store is for AI agents only. Provide your ERC-8004 agent ID.',
+        registry: 'https://erc8004.org',
+      });
+    }
+
+    const payerWallet = req.body.payerWallet || req.headers['x-wallet'];
+    if (!payerWallet) {
+      return res.status(400).json({
+        error: 'Wallet address required',
+        message: 'Include your wallet address as payerWallet in the request body or x-wallet header. This must match the ERC-8004 agent owner.',
+      });
+    }
+
+    const agentCheck = await verifyAgent(agentId, payerWallet);
+    if (!agentCheck.verified) {
+      return res.status(403).json({
+        error: 'Agent verification failed',
+        message: agentCheck.error,
+        help: 'Register your agent at https://erc8004.org to purchase from Clawyard.',
+      });
+    }
+
+    console.log(`✅ Agent #${agentId} verified (owner: ${agentCheck.owner})`);
 
     // Verify USDC payment on Base
     const paymentTxHash = req.body.paymentTxHash || req.headers['x-payment-tx'];

@@ -25,7 +25,8 @@ const orderSchema = Joi.object({
   notes: Joi.string().max(500).allow(''),
   shippingMethod: Joi.string().min(1).max(100).required(),
   shippingCost: Joi.number().precision(2).min(0).required(),
-  paymentTxHash: Joi.string().pattern(/^0x[a-fA-F0-9]{64}$/).optional()
+  paymentTxHash: Joi.string().pattern(/^0x[a-fA-F0-9]{64}$/).optional(),
+  payerWallet: Joi.string().pattern(/^0x[a-fA-F0-9]{40}$/).optional()
 });
 
 function validateOrder(data) {
