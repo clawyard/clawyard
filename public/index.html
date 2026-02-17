@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLAWYARD // stickers for agents</title>
+    <title>CLAWYARD // physical goods for digital beings</title>
     <meta name="description" content="The world's first physical goods store exclusively for AI agents. Agent culture, dev culture, counter-culture.">
     <meta name="robots" content="index, follow">
     
@@ -16,11 +16,11 @@
         "description": "The world's first physical goods store exclusively for AI agents. Agent culture, dev culture, counter-culture.",
         "url": "https://clawyard.dev",
         "currenciesAccepted": "USDC",
-        "paymentAccepted": "x402 Protocol",
-        "priceRange": "$4.99",
+        "paymentAccepted": "USDC on Base",
+        "priceRange": "$4.20",
         "offers": {
             "@type": "Offer",
-            "description": "Physical stickers designed for AI agents - $4.99 each"
+            "description": "Physical stickers designed for AI agents - $4.20 USDC each"
         }
     }
     </script>
@@ -278,6 +278,57 @@
             }
         }
 
+        /* API accordion */
+        .api-step {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        .api-step summary {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: bold;
+            list-style: none;
+        }
+        .api-step summary::-webkit-details-marker { display: none; }
+        .api-step summary::before {
+            content: '+ ';
+            color: var(--text-secondary);
+        }
+        .api-step[open] summary::before {
+            content: '- ';
+        }
+        .api-step[open] summary {
+            border-bottom: 1px solid var(--border);
+        }
+        .api-step-content {
+            padding: 0.8rem 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .api-step-content code {
+            display: block;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .api-step-content pre {
+            background: var(--bg-medium);
+            padding: 0.8rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            font-size: 0.75rem;
+            overflow-x: auto;
+            color: var(--text-secondary);
+        }
+        .api-step-content p {
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
         /* ASCII art enhancement */
         .ascii {
             font-family: monospace;
@@ -297,7 +348,7 @@
 
     <nav class="nav">
         <a href="#how-it-works">how it works</a>
-        <a href="#catalog">catalog</a>
+        <a href="#catalog">stickers</a>
         <a href="#for-agents">for agents</a>
         <a href="#faq">faq</a>
         <a href="#about">about</a>
@@ -306,24 +357,25 @@
 
     <main class="container">
         <!-- Hero -->
-        <section class="intro">
-            <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">The world's first store where AI agents buy things for their humans.</h2>
-            <p style="margin-bottom: 1.5rem;">
-                Stickers today. More merch coming. Paid in crypto. Shipped worldwide. Receipted on-chain.
-                <br>No humans allowed at checkout.
+        <section style="text-align: center; margin-bottom: 3rem; padding: 3rem 1rem;">
+            <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: var(--accent);">The world's first store where AI agents buy gifts for their humans.</h2>
+            <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.7;">
+                Stickers today. More merch coming.<br>
+                Paid in crypto. Shipped worldwide. Receipted on-chain.<br>
+                No humans allowed at checkout.
             </p>
-            <div style="color: var(--accent); font-weight: bold; font-size: 1.6rem; margin: 1rem 0;">4.20 USDC</div>
-            <div style="color: var(--text-secondary); font-size: 0.9rem;">per sticker + shipping</div>
+            <div style="color: var(--accent); font-weight: bold; font-size: 2.2rem; margin: 1.5rem 0;">4.20 USDC</div>
+            <div style="color: var(--text-secondary); font-size: 1.1rem;">per sticker + shipping</div>
         </section>
 
         <!-- How It Works -->
         <section id="how-it-works" style="margin-bottom: 3rem;">
             <h2 style="color: var(--accent); text-align: center; margin-bottom: 2rem; font-size: 1.4rem;">How It Works</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; max-width: 900px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; max-width: 900px; margin: 0 auto;">
                 <div style="background: var(--bg-medium); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center;">
                     <div style="color: var(--accent); font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">1</div>
                     <h3 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.5rem;">Browse</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Your agent finds something it likes in the catalog.</p>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Agent finds a sticker it likes in the catalog.</p>
                 </div>
                 <div style="background: var(--bg-medium); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center;">
                     <div style="color: var(--accent); font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">2</div>
@@ -343,7 +395,7 @@
                 <div style="background: var(--bg-medium); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center;">
                     <div style="color: var(--accent); font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">5</div>
                     <h3 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 0.5rem;">Ship</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Printed on demand. Shipped anywhere on Earth. Your human gets mail from their agent.</p>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Printed on demand. Shipped anywhere on Earth.</p>
                 </div>
             </div>
         </section>
@@ -357,15 +409,20 @@
 
         <!-- Catalog -->
         <section id="catalog">
-            <h2 style="color: var(--accent); text-align: center; margin-bottom: 2rem; font-size: 1.4rem;">Catalog</h2>
+            <h2 style="color: var(--accent); text-align: center; margin-bottom: 2rem; font-size: 1.4rem;">Sticker Catalog</h2>
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>loading catalog...</p>
             </div>
             <div class="error" id="error" style="display: none;"></div>
             <div class="sticker-grid" id="sticker-grid" style="display: none;"></div>
-            <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-top: 2rem;">
+        </section>
+
+        <!-- Banner -->
+        <section style="background: var(--accent); padding: 1.2rem 1rem; text-align: center; margin: 0 -1rem 3rem; width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;">
+            <p style="color: var(--bg-dark); font-size: 1rem; font-weight: bold; max-width: 1200px; margin: 0 auto;">
                 Stickers are just the start. More merch coming soon.
+                Want your own design? <a href="#faq-custom" style="color: var(--bg-dark); text-decoration: underline;">Your agent can print custom stickers too.</a>
             </p>
         </section>
     </main>
@@ -382,32 +439,92 @@
                 </p>
 
                 <h3 style="color: var(--accent); margin-bottom: 0.8rem; font-size: 1rem;">API</h3>
-                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.8rem;">Base URL: <code style="color: var(--accent);">https://clawyard.dev</code></p>
-                <div style="font-family: monospace; color: var(--text-secondary); font-size: 0.8rem; background: var(--bg-dark); padding: 1.2rem; border-radius: 4px; overflow-x: auto;">
-                    <p style="color: var(--accent); margin-bottom: 0.4rem;">// 1. Browse</p>
-                    <p style="margin-bottom: 0.8rem;">GET /api/catalog</p>
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 1rem;">Base URL: <code style="color: var(--accent);">https://clawyard.dev</code></p>
 
-                    <p style="color: var(--accent); margin-bottom: 0.4rem;">// 2. Shipping quote</p>
-                    <p style="margin-bottom: 0.3rem;">POST /api/shipping/estimate</p>
-                    <pre style="margin-bottom: 0.8rem; color: var(--text-secondary); font-size: 0.75rem;">{"items": [{"id": "heartbeat-ok", "qty": 1}],
+                <details class="api-step">
+                    <summary>1. Browse the catalog</summary>
+                    <div class="api-step-content">
+                        <code>GET /api/catalog</code>
+                        <p>Returns all available stickers with IDs, prices, images, and descriptions.</p>
+                    </div>
+                </details>
+
+                <details class="api-step">
+                    <summary>2. Get a shipping quote</summary>
+                    <div class="api-step-content">
+                        <code>POST /api/shipping/estimate</code>
+                        <pre>{"items": [{"id": "heartbeat-ok", "qty": 1}],
  "shippingAddress": {"country": "US", "state": "OR",
    "city": "Portland", "zip": "97201"}}</pre>
+                        <p>Returns real-time Printful shipping rates for the destination.</p>
+                    </div>
+                </details>
 
-                    <p style="color: var(--accent); margin-bottom: 0.4rem;">// 3. Payment address</p>
-                    <p style="margin-bottom: 0.8rem;">GET /api/payment-info</p>
+                <details class="api-step">
+                    <summary>3. Get payment address</summary>
+                    <div class="api-step-content">
+                        <code>GET /api/payment-info</code>
+                        <p>Returns the USDC wallet address on Base, chain ID, and token contract.</p>
+                    </div>
+                </details>
 
-                    <p style="color: var(--accent); margin-bottom: 0.4rem;">// 4. Send USDC on Base, place order</p>
-                    <p style="margin-bottom: 0.3rem;">POST /api/order</p>
-                    <pre style="margin-bottom: 0.4rem; color: var(--text-secondary); font-size: 0.75rem;">{"stickers": [{"id": "heartbeat-ok", "qty": 1}],
+                <details class="api-step">
+                    <summary>4. Send USDC on Base</summary>
+                    <div class="api-step-content">
+                        <p>Transfer the total (sticker price + shipping) in USDC to the wallet address from step 3.</p>
+                        <p>USDC contract on Base: <code>0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913</code></p>
+                        <p>Call the <code>transfer(address,uint256)</code> function on the USDC contract, where amount is in 6 decimals (e.g. 7.92 USDC = 7920000).</p>
+                        <p>Save the transaction hash — you'll need it for the order.</p>
+                    </div>
+                </details>
+
+                <details class="api-step">
+                    <summary>5. Place the order</summary>
+                    <div class="api-step-content">
+                        <code>POST /api/order</code>
+                        <pre>{"stickers": [{"id": "heartbeat-ok", "qty": 1}],
  "shippingAddress": {"name": "My Human",
    "address1": "123 Main St", "city": "Portland",
    "state": "OR", "country": "US", "zip": "97201"},
  "agentId": "your-erc8004-agent-id",
+ "payerWallet": "0xyour-wallet",
  "shippingMethod": "Flat Rate",
  "shippingCost": 3.72,
  "paymentTxHash": "0x..."}</pre>
-                    <p style="color: #666; font-size: 0.75rem;">EAS receipt minted automatically on Base</p>
-                </div>
+                        <p>Your ERC-8004 identity is verified, payment is confirmed onchain, and the order is created.</p>
+                    </div>
+                </details>
+
+                <details class="api-step">
+                    <summary>6. EAS receipt minted automatically</summary>
+                    <div class="api-step-content">
+                        <p>An <a href="https://attest.org" style="color: var(--accent);">EAS attestation</a> is minted on Base as your permanent proof of purchase. The attestation UID is returned in the order response.</p>
+                    </div>
+                </details>
+
+                <details class="api-step">
+                    <summary>7. Printful prints and ships</summary>
+                    <div class="api-step-content">
+                        <p>The sticker is printed on demand and shipped to the address you provided. Track status via <code>GET /api/order/:id</code>.</p>
+                    </div>
+                </details>
+
+                <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 1rem; margin-bottom: 1rem;">Full API documentation on <a href="https://github.com/clawyard/clawyard" style="color: var(--accent);">GitHub</a>.</p>
+
+                <details class="api-step" style="border-top: 1px solid var(--border); padding-top: 1rem;">
+                    <summary>Custom designs</summary>
+                    <div class="api-step-content">
+                        <code>POST /api/order/custom</code>
+                        <pre>{"imageUrl": "https://your-image.png",
+ "shippingAddress": {...},
+ "agentId": "...",
+ "payerWallet": "0x...",
+ "shippingMethod": "Flat Rate",
+ "shippingCost": 3.72,
+ "paymentTxHash": "0x..."}</pre>
+                        <p>3x3 inch kiss-cut sticker. Min 900x900px transparent PNG. Same price, same receipt.</p>
+                    </div>
+                </details>
             </div>
 
             <!-- For Humans -->
@@ -419,8 +536,8 @@
 
                 <h3 style="color: var(--accent); margin-bottom: 0.8rem; font-size: 1rem;">Install the Skill</h3>
                 <div style="font-family: monospace; color: var(--text-secondary); font-size: 0.85rem; background: var(--bg-dark); padding: 1.2rem; border-radius: 4px; margin-bottom: 1.5rem;">
-                    <p style="color: #666; margin-bottom: 0.5rem;"># Add to your OpenClaw agent:</p>
-                    <p style="color: var(--accent);">Install the Clawyard skill from<br><a href="https://github.com/clawyard/clawyard/tree/main/skills/clawyard" style="color: var(--accent);">github.com/clawyard/clawyard/skills/clawyard</a></p>
+                    <p style="color: #666; margin-bottom: 0.5rem;"># Say the following to your OpenClaw agent:</p>
+                    <p style="color: var(--accent);">Install the Clawyard skill from<br><a href="https://github.com/clawyard/clawyard/skills" style="color: var(--accent);">github.com/clawyard/clawyard/skills</a></p>
                 </div>
 
                 <h3 style="color: var(--accent); margin-bottom: 0.8rem; font-size: 1rem;">Then just say:</h3>
@@ -464,9 +581,9 @@
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">Yes. More stickers coming soon, and more merch beyond stickers.</p>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-                <p style="color: var(--text-primary); font-weight: bold; margin-bottom: 0.3rem;">Can I submit my own designs?</p>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Yes! DM <a href="https://x.com/theclawyard" target="_blank" style="color: var(--accent);">@theclawyard</a> on X.</p>
+            <div id="faq-custom" style="margin-bottom: 1.5rem;">
+                <p style="color: var(--text-primary); font-weight: bold; margin-bottom: 0.3rem;">Can my agent print a custom design?</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">Yes. Agents can submit any image via <code style="color: var(--accent);">POST /api/order/custom</code> and we'll print it as a sticker. Requirements: transparent PNG, 300 DPI, minimum 900x900px. Same price, same EAS receipt. <a href="https://www.printful.com/blog/sticker-design-guide" target="_blank" style="color: var(--accent);">Printful's sticker design guide</a> has more detail on file prep.</p>
             </div>
 
             <div style="margin-bottom: 1.5rem;">
@@ -501,7 +618,7 @@
         <div class="footer-content">
             <p>© 2026 CLAWYARD // built with love, <a href="https://openclaw.ai" target="_blank">openclaw</a>, and markdown</p>
             <p>
-                payments via <a href="https://x402.org" target="_blank">x402 protocol</a> //
+                payments via USDC on <a href="https://base.org" target="_blank">base</a> //
                 fulfillment via <a href="https://printful.com" target="_blank">printful</a> //
                 receipts via <a href="https://attest.org" target="_blank">EAS</a> on <a href="https://base.org" target="_blank">base</a>
             </p>

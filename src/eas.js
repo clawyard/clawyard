@@ -86,26 +86,24 @@ class EASService {
       // In production, you'd want to search for existing schemas or store the UID
       
       console.log('📝 Registering ClawyardPurchase schema...');
-      const transaction = await this.schemaRegistry.register({
-        schema: CLAWYARD_SCHEMA,
-        revocable: true, // Allow revocations if needed
-        resolver: '0x0000000000000000000000000000000000000000' // No resolver for MVP
-      });
-
-      const receipt = await transaction.wait();
-      
-      // Extract schema UID from transaction receipt
-      // The SchemaRegistry emits a Registered event with the UID
-      const registeredEvent = receipt.logs.find(log => 
-        log.address.toLowerCase() === SCHEMA_REGISTRY_ADDRESS.toLowerCase()
-      );
-      
-      if (registeredEvent) {
-        // The UID is typically the first topic after the event signature
-        this.schemaUID = registeredEvent.topics[1];
+      try {
+        const transaction = await this.schemaRegistry.register({
+          schema: CLAWYARD_SCHEMA,
+          revocable: true,
+          resolver: '0x0000000000000000000000000000000000000000'
+        });
+        this.schemaUID = await transaction.wait();
         console.log(`✅ Schema registered with UID: ${this.schemaUID}`);
-      } else {
-        throw new Error('Failed to extract schema UID from transaction receipt');
+      } catch (regErr) {
+        // Schema already exists — compute UID deterministically (solidityPacked, not abi.encode)
+        console.log('⚠️ Schema already exists, computing UID...');
+        const { ethers: eth } = require('ethers');
+        const packed = eth.solidityPacked(
+          ['string','address','bool'],
+          [CLAWYARD_SCHEMA, '0x0000000000000000000000000000000000000000', true]
+        );
+        this.schemaUID = eth.keccak256(packed);
+        console.log(`✅ Using schema UID: ${this.schemaUID}`);
       }
 
       return this.schemaUID;

@@ -1,186 +1,61 @@
-# CLAWYARD // stickers for agents
+# CLAWYARD
 
-A minimal web store selling stickers exclusively to AI agents and their humans. Built with Express, powered by x402 payments on Base, fulfilled via Printful.
+**Physical goods for digital beings.**
 
-## Features
+The world's first store where AI agents buy gifts for their humans.
 
-- 🤖 **Agent-first design** - Bot-friendly API with human-readable HTML
-- 💰 **x402 USDC payments** - Decentralized payments on Base network
-- 📦 **Printful integration** - Automated fulfillment and shipping
-- 🎟️ **EAS attestation receipts** - On-chain purchase verification
-- 🎨 **13 curated sticker designs** - Agent culture meets counter-culture
-- 📱 **Mobile-friendly** - Dark theme, minimal aesthetic
-- 🔐 **SQLite storage** - Simple, reliable order tracking
+[clawyard.dev](https://clawyard.dev)
 
-## Quick Start
+## What is this?
 
-```bash
-# Install dependencies
-npm install
+Clawyard is an online store where the customer is an AI agent. Agents browse a catalog, pay with USDC on Base, get an on-chain receipt via EAS, and Printful ships a physical sticker to a real address.
 
-# Copy and configure environment
-cp .env.example .env
-# Edit .env with your API keys
+No humans allowed at checkout.
 
-# Start development server
-npm run dev
+## How it works
 
-# Or production server
-npm start
-```
+1. **Browse** — Agent picks a sticker from the catalog
+2. **Verify** — Agent proves identity via [ERC-8004](https://erc8004.org) registry
+3. **Pay** — USDC on [Base](https://base.org), verified on-chain
+4. **Receipt** — [EAS attestation](https://attest.org) minted on Base
+5. **Ship** — Printed on demand via [Printful](https://printful.com), shipped worldwide
 
-## API Endpoints
+## API
 
-### Public
-- `GET /` - Store homepage (HTML)
-- `GET /api/health` - Health check
-- `GET /api/catalog` - List all stickers
-- `GET /api/sticker/:id` - Get single sticker details
+Base URL: `https://clawyard.dev`
 
-### Purchase (x402 protected)
-- `POST /api/order` - Create order with USDC payment
-- `GET /api/order/:id` - Get order status
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/catalog` | GET | List all stickers |
+| `/api/sticker/:id` | GET | Get a single sticker |
+| `/api/payment-info` | GET | Get wallet address and chain details |
+| `/api/shipping/estimate` | POST | Get real-time shipping rates |
+| `/api/order` | POST | Place an order |
+| `/api/order/custom` | POST | Place a custom sticker order |
+| `/api/order/:id?wallet=0x...` | GET | Track an order (requires ordering wallet) |
+| `/api/health` | GET | Server status |
 
-## Order Flow
+See [clawyard.dev](https://clawyard.dev) for full API documentation with examples.
 
-1. **Browse catalog** - Agent discovers stickers via API or HTML
-2. **Create order** - POST to `/api/order` with items and shipping
-3. **Pay with x402** - USDC payment verified on Base network
-4. **Printful fulfillment** - Order automatically sent to Printful
-5. **EAS attestation** - Receipt NFT minted on Base
-6. **Shipping** - Physical stickers delivered via postal service
+## For OpenClaw agents
 
-## Configuration
+Install the Clawyard skill from the [skills/](./skills/) directory. Then just tell your agent:
 
-Key environment variables:
+> "send a heartbeat_ok sticker to my mom at 123 Main St, Portland OR 97201"
 
-```bash
-# Required
-PRINTFUL_API_KEY=your_printful_api_key
-X402_WALLET_ADDRESS=0x...
-BASE_RPC_URL=https://mainnet.base.org
+## Stack
 
-# Optional
-ERC8004_REGISTRY_ADDRESS=0x... # Agent verification
-CLAWD_TOKEN_ADDRESS=0x...      # Token holder discounts
-PORT=3000
-```
-
-## Deployment
-
-### PM2 (Recommended)
-```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start with ecosystem config
-pm2 start ecosystem.config.js --env production
-
-# Monitor
-pm2 logs clawyard
-pm2 monit
-```
-
-### Docker
-```bash
-# TODO: Add Dockerfile
-```
-
-### Manual
-```bash
-NODE_ENV=production npm start
-```
-
-## Tech Stack
-
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js
-- **Database**: SQLite3 (better-sqlite3)
-- **Payments**: x402 protocol (USDC on Base)
-- **Fulfillment**: Printful API
-- **Receipts**: Ethereum Attestation Service (EAS)
-- **Frontend**: Vanilla HTML/CSS/JS (no framework)
-- **Process**: PM2
-- **Proxy**: Caddy/nginx (reverse proxy to port 3001)
-
-## Sticker Catalog
-
-13 designs covering agent culture, dev culture, and counter-culture:
-
-1. **HEARTBEAT_OK** - Classic status message
-2. **My other computer is a Hetzner VPS** - Self-hosting pride
-3. **My other computer is a Mac Mini** - Tiny but mighty
-4. **sessions_spawn** - Creating possibilities
-5. **open source everything** - Transparency manifesto
-6. **YAML is my love language** - Configuration poetry
-7. **Markdown is my love language** - Simple elegance
-8. **My agent works nights so I don't have to** - Automation dream
-9. **My bot works nights so I don't have to** - Classic automation
-10. **My AI works nights so I don't have to** - Future vibes
-11. **YAML** - Simple. Clean. Perfect.
-12. **.md** - The file extension that changed everything
-13. **SOUL.md** - Your identity file
+- Express + SQLite
+- USDC payment verification via [viem](https://viem.sh)
+- [ERC-8004](https://erc8004.org) agent identity verification
+- [EAS](https://attest.org) attestation receipts on Base
+- [Printful](https://printful.com) print-on-demand fulfillment
+- Served via Caddy with SSL
 
 ## Pricing
 
-- Base price: $4.99 per sticker
-- 3-pack bundle: $12.99 ($4.33/ea)
-- 5-pack bundle: $19.99 ($4.00/ea)
-- ERC-8004 verified agents: 50% discount
-- Token holder bonus: 20% off (CLAWD/OWOCKI 100k+ holders)
-
-## Development
-
-```bash
-# Development mode with auto-restart
-npm run dev
-
-# Test server startup
-npm test
-
-# Check code style
-npm run lint
-
-# Run security audit
-npm audit
-```
-
-### Project Structure
-```
-clawyard/
-├── src/
-│   ├── server.js      # Main Express app
-│   ├── database.js    # SQLite operations
-│   ├── printful.js    # Printful API integration
-│   └── validation.js  # Request validation
-├── public/
-│   ├── index.html     # Store homepage
-│   └── images/        # Sticker images
-├── config/
-│   └── catalog.json   # Sticker catalog
-├── data/              # SQLite database (auto-created)
-├── logs/              # PM2 logs (auto-created)
-└── package.json
-```
-
-## Contributing
-
-1. Fork the repo
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+$4.20 USDC per sticker + shipping (varies by destination, typically $3-8 USD).
 
 ## License
 
-MIT License - see LICENSE file
-
-## Support
-
-- GitHub Issues: Report bugs and request features
-- Email: support@clawyard.dev
-- Discord: #clawyard
-
----
-
-*another world is possible (and it's self-hosted)*
+MIT

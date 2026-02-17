@@ -15,6 +15,7 @@ const { verifyAgent } = require('./agent-verify');
 const Joi = require('joi');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 
 // Security middleware
@@ -328,6 +329,119 @@ app.post('/api/order', orderLimiter, async (req, res) => {
   }
 });
 
+// Custom sticker order
+app.post('/api/order/custom', orderLimiter, async (req, res) => {
+  try {
+    const { imageUrl, size, shippingAddress, agentId, shippingMethod, shippingCost, paymentTxHash, payerWallet: bodyWallet } = req.body;
+
+    // Validate required fields
+    if (!imageUrl) return res.status(400).json({ error: 'imageUrl is required (transparent PNG, min 900x900px)' });
+    if (!shippingAddress) return res.status(400).json({ error: 'shippingAddress is required' });
+    if (!agentId) return res.status(403).json({ error: 'Agent verification required', message: 'This store is for AI agents only.' });
+    if (!shippingMethod || shippingCost === undefined) return res.status(400).json({ error: 'shippingMethod and shippingCost are required' });
+
+    const stickerSize = size || '3x3';
+    const validSizes = ['3x3', '4x4', '5.5x5.5'];
+    if (!validSizes.includes(stickerSize)) {
+      return res.status(400).json({ error: `Invalid size. Options: ${validSizes.join(', ')}` });
+    }
+
+    // Verify agent identity
+    const payerWallet = bodyWallet || req.headers['x-wallet'];
+    if (!payerWallet) return res.status(400).json({ error: 'Wallet address required (payerWallet or x-wallet header)' });
+
+    const agentCheck = await verifyAgent(agentId, payerWallet);
+    if (!agentCheck.verified) {
+      return res.status(403).json({ error: 'Agent verification failed', message: agentCheck.error });
+    }
+
+    console.log(`✅ Agent #${agentId} verified for custom order (owner: ${agentCheck.owner})`);
+
+    // Verify payment
+    if (!paymentTxHash) {
+      return res.status(402).json({
+        error: 'Payment required',
+        message: 'Send USDC on Base to our wallet, then include paymentTxHash.',
+        paymentInfo: { wallet: getPaymentAddress(), chain: 'base', token: 'USDC', tokenAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' }
+      });
+    }
+
+    const basePrice = 4.20;
+    const finalTotal = basePrice + shippingCost;
+
+    const paymentInfo = await verifyPayment(paymentTxHash, finalTotal);
+    if (!paymentInfo.verified) {
+      return res.status(402).json({ error: 'Payment verification failed', message: paymentInfo.error, expectedAmount: finalTotal.toFixed(2) });
+    }
+
+    const orderItems = [{
+      id: 'custom',
+      name: 'Custom Sticker',
+      qty: 1,
+      price: basePrice,
+      total: basePrice,
+      imageUrl,
+      size: stickerSize
+    }];
+
+    // Create order in database
+    const orderId = db.createOrder({
+      wallet: paymentInfo.from,
+      items: orderItems,
+      shippingAddress,
+      totalUSDC: finalTotal.toFixed(2),
+      agentId,
+      paymentTxHash: paymentInfo.transactionHash,
+      paymentTimestamp: paymentInfo.timestamp
+    });
+
+    // Create Printful order with custom image
+    let printfulOrderId = null;
+    try {
+      printfulOrderId = await printfulService.createOrder({
+        orderId,
+        items: orderItems,
+        shippingAddress,
+        customImageUrl: imageUrl
+      });
+      db.updateOrderPrintful(orderId, printfulOrderId);
+    } catch (printfulError) {
+      console.error('Printful custom order failed:', printfulError);
+    }
+
+    // EAS attestation
+    let attestationUID = null;
+    try {
+      const attestationData = {
+        orderId,
+        buyer: paymentInfo.from,
+        items: JSON.stringify([{ id: 'custom', imageUrl, size: stickerSize, qty: 1, price: basePrice.toFixed(2) }]),
+        totalUSDC: finalTotal,
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+      attestationUID = await easService.mintAttestation(attestationData);
+      db.updateOrderAttestation(orderId, attestationUID);
+    } catch (easError) {
+      console.error('❌ EAS attestation failed:', easError);
+    }
+
+    res.status(201).json({
+      orderId,
+      printfulOrderId,
+      attestationUID,
+      total: finalTotal.toFixed(2),
+      items: orderItems,
+      status: 'pending',
+      type: 'custom',
+      payment: { verified: true, from: paymentInfo.from, transactionHash: paymentInfo.transactionHash }
+    });
+
+  } catch (error) {
+    console.error('Custom order failed:', error);
+    res.status(500).json({ error: 'Custom order creation failed' });
+  }
+});
+
 // Get order status
 app.get('/api/order/:id', (req, res) => {
   try {
@@ -336,9 +450,15 @@ app.get('/api/order/:id', (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // TODO: Verify wallet signature to prevent order info leakage
+    // Require payerWallet query param to prevent order info leakage
+    const { wallet } = req.query;
+    if (!wallet || wallet.toLowerCase() !== order.payerWallet?.toLowerCase()) {
+      return res.status(403).json({ error: 'Wallet mismatch. Pass ?wallet=0x... matching the ordering wallet.' });
+    }
     
-    res.json(order);
+    // Strip shipping address from response - it's PII and the agent already has it
+    const { shippingAddress, ...safeOrder } = typeof order === 'object' ? order : {};
+    res.json(safeOrder);
   } catch (error) {
     console.error('Get order failed:', error);
     res.status(500).json({ error: 'Failed to retrieve order' });
