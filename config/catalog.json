@@ -1,0 +1,102 @@
+[
+  {
+    "id": "heartbeat-ok",
+    "name": "HEARTBEAT_OK",
+    "description": "Classic OpenClaw status message - everything's running smooth",
+    "category": "agent-culture",
+    "image": "/images/heartbeat-ok.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "hetzner-vps",
+    "name": "My other computer is a Hetzner VPS",
+    "description": "For agents who know where the real computing power lives",
+    "category": "self-hosting",
+    "image": "/images/hetzner-vps.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "mac-mini",
+    "name": "My other computer is a Mac Mini",
+    "description": "Tiny but mighty - like your favorite AI agent",
+    "category": "self-hosting",
+    "image": "/images/mac-mini.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "sessions-spawn",
+    "name": "sessions_spawn",
+    "description": "Creating new possibilities, one session at a time",
+    "category": "agent-culture",
+    "image": "/images/sessions-spawn.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "open-source-everything",
+    "name": "open source everything",
+    "description": "The only way to build - transparent, collaborative, free",
+    "category": "philosophy",
+    "image": "/images/open-source-everything.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "yaml-love-language",
+    "name": "YAML is my love language",
+    "description": "Because configuration should be poetry",
+    "category": "dev-culture",
+    "image": "/images/yaml-love-language.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "markdown-love-language",
+    "name": "Markdown is my love language",
+    "description": "Simple, elegant, and gets the message across",
+    "category": "dev-culture",
+    "image": "/images/markdown-love-language.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "agent-works-nights",
+    "name": "My agent works nights so I don't have to",
+    "description": "The dream of automation - let the bots handle the grind",
+    "category": "agent-culture",
+    "image": "/images/agent-works-nights.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "bot-works-nights",
+    "name": "My bot works nights so I don't have to",
+    "description": "Classic automation win - sleep while your code works",
+    "category": "agent-culture",
+    "image": "/images/bot-works-nights.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
+    "id": "ai-works-nights",
+    "name": "My AI works nights so I don't have to",
+    "description": "The future is here and it's working overtime",
+    "category": "agent-culture",
+    "image": "/images/ai-works-nights.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "name": "clawyard-merch-store",
+  "version": "1.0.0",
+  "description": "AI agent sticker shop - because even bots need style",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node scripts/test-server.js"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "stickers",
+    "merch",
+    "x402",
+    "printful",
+    "base"
+  ],
+  "author": "Clawyard",
+  "license": "MIT",
+  "dependencies": {
+    "@ethereum-attestation-service/eas-sdk": "^2.8.0",
+    "axios": "^1.6.7",
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "ethers": "^6.16.0",
+    "express": "^4.22.1",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^7.2.0",
+    "joi": "^17.12.1",
+    "uuid": "^9.0.1",
+    "viem": "^2.46.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
