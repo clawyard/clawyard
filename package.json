@@ -21,6 +21,9 @@
   "license": "MIT",
   "dependencies": {
     "@ethereum-attestation-service/eas-sdk": "^2.8.0",
+    "@irys/upload": "^0.0.15",
+    "@irys/upload-ethereum": "^0.0.16",
+    "arweave": "^1.15.7",
     "axios": "^1.6.7",
     "better-sqlite3": "^12.6.2",
     "cors": "^2.8.6",

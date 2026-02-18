@@ -12,6 +12,7 @@ const { validateOrder } = require('./validation');
 const { easService } = require('./eas');
 const { verifyPayment, getPaymentAddress } = require('./payment');
 const { verifyAgent } = require('./agent-verify');
+const { uploadItems, uploadMetadata } = require('./arweave');
 const Joi = require('joi');
 
 const app = express();
@@ -205,6 +206,9 @@ app.post('/api/order', orderLimiter, async (req, res) => {
 
     // Verify USDC payment on Base
     const paymentTxHash = req.body.paymentTxHash || req.headers['x-payment-tx'];
+    if (paymentTxHash && db.getOrderByTxHash(paymentTxHash)) {
+      return res.status(400).json({ error: 'This payment transaction has already been used for an order' });
+    }
     if (!paymentTxHash) {
       return res.status(402).json({
         error: 'Payment required',
@@ -236,7 +240,9 @@ app.post('/api/order', orderLimiter, async (req, res) => {
         name: sticker.name,
         qty: item.qty,
         price: sticker.basePrice,
-        total: itemTotal
+        total: itemTotal,
+        printfulVariantId: sticker.printfulVariantId,
+        imageUrl: sticker.image ? `https://clawyard.dev${sticker.image}` : null
       });
     }
 
@@ -280,19 +286,43 @@ app.post('/api/order', orderLimiter, async (req, res) => {
       
       db.updateOrderPrintful(orderId, printfulOrderId);
     } catch (printfulError) {
-      console.error('Printful order failed:', printfulError);
-      // Continue - we'll retry later
+      console.error('Printful order failed:', printfulError.response?.data || printfulError.message);
+      // Mark as needing retry but continue to create attestation
+      db.updateOrderStatus(orderId, 'printful_failed');
     }
 
     // Create EAS attestation (receipt)
     let attestationUID = null;
     try {
+      // Upload items and metadata to Arweave permanently
+      let itemsRef = '';
+      let metadataRef = '';
+      try {
+        const itemsTxId = await uploadItems(orderId, orderItems);
+        itemsRef = itemsTxId ? `https://arweave.net/${itemsTxId}` : orderItems.map(i => `${i.name} x${i.qty}`).join(', ');
+        
+        const metaTxId = await uploadMetadata(orderId, {
+          shippingMethod: shippingMethod || 'STANDARD',
+          productCategory: 'stickers',
+          printfulOrderId: printfulOrderId || null,
+        });
+        metadataRef = metaTxId ? `https://arweave.net/${metaTxId}` : '';
+      } catch (arweaveErr) {
+        console.error('⚠️ Arweave upload failed (non-blocking):', arweaveErr.message);
+        itemsRef = orderItems.map(i => `${i.name} x${i.qty}`).join(', ');
+      }
+
       const attestationData = {
         orderId,
         buyer: paymentInfo.from,
-        items: easService.formatItemsForAttestation(orderItems),
-        totalUSDC: finalTotal,
-        timestamp: Math.floor(Date.now() / 1000)
+        agentId: agentId || '0',
+        storeName: 'clawyard',
+        providerName: 'printful',
+        paymentToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        paymentAmount: finalTotal,
+        orderDate: Math.floor(Date.now() / 1000),
+        itemsRef,
+        metadataRef
       };
       
       attestationUID = await easService.mintAttestation(attestationData);
@@ -358,6 +388,9 @@ app.post('/api/order/custom', orderLimiter, async (req, res) => {
     console.log(`✅ Agent #${agentId} verified for custom order (owner: ${agentCheck.owner})`);
 
     // Verify payment
+    if (paymentTxHash && db.getOrderByTxHash(paymentTxHash)) {
+      return res.status(400).json({ error: 'This payment transaction has already been used for an order' });
+    }
     if (!paymentTxHash) {
       return res.status(402).json({
         error: 'Payment required',
@@ -412,12 +445,28 @@ app.post('/api/order/custom', orderLimiter, async (req, res) => {
     // EAS attestation
     let attestationUID = null;
     try {
+      let itemsRef = `Custom sticker ${stickerSize || '3x3'}`;
+      let metadataRef = '';
+      try {
+        const itemsTxId = await uploadItems(orderId, [{ id: 'custom', name: 'Custom sticker', qty: 1, price: basePrice, imageUrl: imageUrl }]);
+        if (itemsTxId) itemsRef = `https://arweave.net/${itemsTxId}`;
+        const metaTxId = await uploadMetadata(orderId, { productCategory: 'stickers', customImage: imageUrl, printfulOrderId: printfulOrderId || null });
+        if (metaTxId) metadataRef = `https://arweave.net/${metaTxId}`;
+      } catch (arweaveErr) {
+        console.error('⚠️ Arweave upload failed (non-blocking):', arweaveErr.message);
+      }
+
       const attestationData = {
         orderId,
         buyer: paymentInfo.from,
-        items: JSON.stringify([{ id: 'custom', imageUrl, size: stickerSize, qty: 1, price: basePrice.toFixed(2) }]),
-        totalUSDC: finalTotal,
-        timestamp: Math.floor(Date.now() / 1000)
+        agentId: agentId || '0',
+        storeName: 'clawyard',
+        providerName: 'printful',
+        paymentToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        paymentAmount: finalTotal,
+        orderDate: Math.floor(Date.now() / 1000),
+        itemsRef,
+        metadataRef
       };
       attestationUID = await easService.mintAttestation(attestationData);
       db.updateOrderAttestation(orderId, attestationUID);

@@ -196,13 +196,83 @@ See [`skills/clawyard/SKILL.md`](./skills/clawyard/SKILL.md) for the full skill 
 
 ## EAS Receipts
 
-Every purchase mints an [EAS attestation](https://attest.org) on Base. The attestation schema:
+Every purchase mints an [EAS attestation](https://attest.org) on Base as a permanent, on-chain proof of purchase.
+
+### Schema v2
+
+**Schema UID:** [`0x5c1f61f956c705bbf27274f556b6108e08e552d2b15b70e528e8328bf9dec69e`](https://base.easscan.org/schema/view/0x5c1f61f956c705bbf27274f556b6108e08e552d2b15b70e528e8328bf9dec69e)
+
+```solidity
+string orderId,        // Clawyard order ID
+address buyer,         // Wallet that paid
+uint256 agentId,       // ERC-8004 agent token ID
+string storeName,      // Storefront name (e.g. "clawyard")
+string providerName,   // Fulfillment provider (e.g. "printful")
+address paymentToken,  // Token contract (USDC: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)
+uint256 paymentAmount, // Amount in token's smallest unit (6 decimals for USDC)
+uint64 orderDate,      // UNIX timestamp
+string itemsRef,       // Arweave URL to permanent item details JSON
+string metadataRef     // Arweave URL to permanent order metadata JSON
+```
+
+### Field details
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orderId` | string | Unique order identifier from Clawyard |
+| `buyer` | address | Ethereum address that sent the USDC payment |
+| `agentId` | uint256 | ERC-8004 agent NFT token ID on Ethereum mainnet |
+| `storeName` | string | Storefront that processed the order. Currently `"clawyard"`. Designed for multi-store expansion. |
+| `providerName` | string | Fulfillment backend. Currently `"printful"`. Designed for multi-provider expansion (apparel, food, coffee, etc.) |
+| `paymentToken` | address | ERC-20 token contract used for payment. Currently USDC on Base. |
+| `paymentAmount` | uint256 | Payment amount in the token's smallest unit. For USDC: multiply USD by 10^6. |
+| `orderDate` | uint64 | UNIX timestamp when the order was placed |
+| `itemsRef` | string | Permanent Arweave URL (`https://arweave.net/{txId}`) pointing to a JSON file with full item details (names, quantities, prices, image URLs) |
+| `metadataRef` | string | Permanent Arweave URL pointing to a JSON file with order metadata (shipping method, product category, Printful order ID, etc.) |
+
+### Data storage
+
+- **On-chain (EAS attestation):** Core purchase data - who bought, what agent, how much, when, and permanent links to details
+- **On Arweave (permanent):** Full item details and order metadata as JSON. Uploaded via [Irys](https://irys.xyz) bundler, funded with Base ETH. Data is permanent and immutable.
+- **Off-chain (Clawyard DB):** Shipping addresses, Printful tracking, mutable order status. Never stored on-chain.
+
+### Design principles
+
+- **No PII on-chain** — Shipping addresses and personal info are never in attestations or on Arweave
+- **Immutable receipts** — Attestations can't be modified after minting. No mutable status fields.
+- **Future-proof** — `storeName` and `providerName` support multi-store, multi-provider expansion without schema changes
+- **Permanent metadata** — Arweave ensures item details and metadata survive even if Clawyard's servers go down
+- **Single token** — One `paymentToken` + `paymentAmount` per order (covers 99% of use cases cleanly)
+
+### Schema v1 (deprecated)
 
 ```
 string orderId, address buyer, string items, uint256 totalUSDC, uint256 timestamp
 ```
 
-Receipts are permanent, on-chain, and may gate access to future merch drops (loyalty tiers, exclusive items, early access).
+Schema UID: `0x10860b047f2fbfb5a3039ebfe5ba07a7e7c125c20c135b327c39fe81ca852550`. Used for early test orders. v1 attestations remain valid on-chain but new orders use v2.
+
+### Querying attestations
+
+Attestations can be queried via the [EAS GraphQL API](https://docs.attest.org/docs/developer-tools/api):
+
+```graphql
+query {
+  attestations(
+    where: {
+      schemaId: { equals: "0x5c1f61f956c705bbf27274f556b6108e08e552d2b15b70e528e8328bf9dec69e" }
+    }
+  ) {
+    id
+    recipient
+    attester
+    decodedDataJson
+    timeCreated
+  }
+}
+```
+
+Receipts may gate access to future merch drops (loyalty tiers, exclusive items, early access).
 
 ## Stack
 

@@ -35,15 +35,21 @@ async function createOrder(orderData) {
   try {
     const { orderId, items, shippingAddress } = orderData;
     
-    // Map our items to Printful format
+    // Map our items to Printful format (one-off orders, no sync needed)
     const printfulItems = items.map(item => ({
-      sync_variant_id: item.printfulVariantId || 1, // TODO: Map real variant IDs
+      variant_id: item.printfulVariantId,
       quantity: item.qty,
-      // TODO: Add customization options if needed
+      retail_price: item.price ? item.price.toFixed(2) : '4.20',
+      files: [
+        {
+          type: 'default',
+          url: item.imageUrl || `https://clawyard.dev/images/${item.id}.png`
+        }
+      ]
     }));
 
     const printfulOrder = {
-      external_id: orderId,
+      external_id: `CLW-${orderId.slice(0, 8)}`,
       shipping: 'STANDARD', // or based on customer selection
       recipient: {
         name: shippingAddress.name,
@@ -72,7 +78,11 @@ async function createOrder(orderData) {
     
     if (response.data && response.data.result) {
       const printfulOrderId = response.data.result.id;
-      console.log(`✅ Printful order created: ${printfulOrderId}`);
+      console.log(`✅ Printful order created (draft): ${printfulOrderId}, confirming...`);
+      
+      // Confirm the order so it enters production
+      await printfulAPI.post(`/orders/${printfulOrderId}/confirm`);
+      console.log(`✅ Printful order confirmed: ${printfulOrderId}`);
       return printfulOrderId;
     } else {
       throw new Error('Invalid response from Printful API');

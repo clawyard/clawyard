@@ -48,6 +48,7 @@ function createTables() {
   db.exec('CREATE INDEX IF NOT EXISTS idx_orders_wallet ON orders(wallet)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at)');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_tx_hash ON orders(tx_hash) WHERE tx_hash IS NOT NULL');
   
   console.log('✅ Database tables created');
 }
@@ -57,8 +58,8 @@ function createOrder(orderData) {
   
   const stmt = db.prepare(`
     INSERT INTO orders (
-      id, wallet, items, shipping_address, total_usdc, agent_id
-    ) VALUES (?, ?, ?, ?, ?, ?)
+      id, wallet, items, shipping_address, total_usdc, agent_id, tx_hash
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   
   try {
@@ -68,7 +69,8 @@ function createOrder(orderData) {
       JSON.stringify(orderData.items),
       JSON.stringify(orderData.shippingAddress),
       orderData.totalUSDC,
-      orderData.agentId || null
+      orderData.agentId || null,
+      orderData.paymentTxHash || null
     );
     
     console.log(`📝 Order created: ${orderId}`);
@@ -233,10 +235,16 @@ function close() {
 process.on('SIGTERM', close);
 process.on('SIGINT', close);
 
+function getOrderByTxHash(txHash) {
+  const stmt = db.prepare('SELECT id FROM orders WHERE tx_hash = ?');
+  return stmt.get(txHash) || null;
+}
+
 module.exports = {
   init,
   createOrder,
   getOrder,
+  getOrderByTxHash,
   updateOrderStatus,
   updateOrderPrintful,
   updateOrderTxHash,

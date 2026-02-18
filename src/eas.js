@@ -9,8 +9,10 @@ const EAS_CONTRACT_ADDRESS = '0x4200000000000000000000000000000000000021';
 const SCHEMA_REGISTRY_ADDRESS = '0x4200000000000000000000000000000000000020';
 const WALLET_KEY_PATH = '/root/.secrets/clawyard-wallet.json';
 
-// Schema definition for ClawyardPurchase
-const CLAWYARD_SCHEMA = 'string orderId, address buyer, string items, uint256 totalUSDC, uint256 timestamp';
+// Schema v1 (deprecated): 'string orderId, address buyer, string items, uint256 totalUSDC, uint256 timestamp'
+// Schema v2 - registered on Base: 0x5c1f61f956c705bbf27274f556b6108e08e552d2b15b70e528e8328bf9dec69e
+const CLAWYARD_SCHEMA = 'string orderId,address buyer,uint256 agentId,string storeName,string providerName,address paymentToken,uint256 paymentAmount,uint64 orderDate,string itemsRef,string metadataRef';
+const CLAWYARD_SCHEMA_UID = '0x5c1f61f956c705bbf27274f556b6108e08e552d2b15b70e528e8328bf9dec69e';
 
 class EASService {
   constructor() {
@@ -77,40 +79,8 @@ class EASService {
 
   async ensureSchema() {
     if (!this.initialized) await this.initialize();
-    if (this.schemaUID) return this.schemaUID;
-
-    try {
-      console.log('🔍 Checking for existing ClawyardPurchase schema...');
-      
-      // For MVP, we'll use a hardcoded schema UID if it exists
-      // In production, you'd want to search for existing schemas or store the UID
-      
-      console.log('📝 Registering ClawyardPurchase schema...');
-      try {
-        const transaction = await this.schemaRegistry.register({
-          schema: CLAWYARD_SCHEMA,
-          revocable: true,
-          resolver: '0x0000000000000000000000000000000000000000'
-        });
-        this.schemaUID = await transaction.wait();
-        console.log(`✅ Schema registered with UID: ${this.schemaUID}`);
-      } catch (regErr) {
-        // Schema already exists — compute UID deterministically (solidityPacked, not abi.encode)
-        console.log('⚠️ Schema already exists, computing UID...');
-        const { ethers: eth } = require('ethers');
-        const packed = eth.solidityPacked(
-          ['string','address','bool'],
-          [CLAWYARD_SCHEMA, '0x0000000000000000000000000000000000000000', true]
-        );
-        this.schemaUID = eth.keccak256(packed);
-        console.log(`✅ Using schema UID: ${this.schemaUID}`);
-      }
-
-      return this.schemaUID;
-    } catch (error) {
-      console.error('❌ Failed to register schema:', error);
-      throw error;
-    }
+    this.schemaUID = CLAWYARD_SCHEMA_UID;
+    return this.schemaUID;
   }
 
   async mintAttestation(orderData) {
@@ -119,18 +89,28 @@ class EASService {
     try {
       const schemaUID = await this.ensureSchema();
       
-      const { orderId, buyer, items, totalUSDC, timestamp } = orderData;
+      const { orderId, buyer, agentId, storeName, providerName, paymentToken, paymentAmount, orderDate, itemsRef, metadataRef } = orderData;
       
       console.log(`🪙 Minting EAS attestation for order ${orderId}...`);
       
-      // Encode the attestation data
+      // USDC on Base
+      const USDC_ADDRESS = paymentToken || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+      // Convert payment amount to USDC micro-units (6 decimals)
+      const amountBigInt = BigInt(Math.floor((paymentAmount || 0) * 1000000));
+      
+      // Encode the attestation data (v2 schema)
       const schemaEncoder = new SchemaEncoder(CLAWYARD_SCHEMA);
       const encodedData = schemaEncoder.encodeData([
         { name: 'orderId', value: orderId, type: 'string' },
         { name: 'buyer', value: buyer, type: 'address' },
-        { name: 'items', value: items, type: 'string' },
-        { name: 'totalUSDC', value: BigInt(Math.floor(totalUSDC * 1000000)), type: 'uint256' }, // Convert to micro-USDC
-        { name: 'timestamp', value: BigInt(timestamp), type: 'uint256' }
+        { name: 'agentId', value: BigInt(agentId || 0), type: 'uint256' },
+        { name: 'storeName', value: storeName || 'clawyard', type: 'string' },
+        { name: 'providerName', value: providerName || 'printful', type: 'string' },
+        { name: 'paymentToken', value: USDC_ADDRESS, type: 'address' },
+        { name: 'paymentAmount', value: amountBigInt, type: 'uint256' },
+        { name: 'orderDate', value: BigInt(orderDate || Math.floor(Date.now() / 1000)), type: 'uint64' },
+        { name: 'itemsRef', value: itemsRef || '', type: 'string' },
+        { name: 'metadataRef', value: metadataRef || '', type: 'string' }
       ]);
 
       // Create the attestation
