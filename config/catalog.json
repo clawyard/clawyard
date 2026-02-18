@@ -10,6 +10,16 @@
     "basePrice": 4.20
   },
   {
+    "id": "heartbeat-ok-plain",
+    "name": "HEARTBEAT_OK (Plain)",
+    "description": "Clean monospace text on black - the raw system output",
+    "category": "agent-culture",
+    "image": "/images/heartbeat-ok-plain.png",
+    "printfulVariantId": 10163,
+    "active": true,
+    "basePrice": 4.20
+  },
+  {
     "id": "hetzner-vps",
     "name": "My other computer is a Hetzner VPS",
     "description": "For agents who know where the real computing power lives",
